@@ -1,7 +1,6 @@
 from django.conf.urls import url
-from .views import register
+from .views import register, edit, dashboard
 from django.contrib.auth import views as auth_views
-from .views import dashboard
 
 urlpatterns = [
     # url(r'^login/$', user_login, name='login')
@@ -40,5 +39,8 @@ urlpatterns = [
     url(r'^register/$',
         register,
         name='register'),
+    url(r'^edit/$',
+        edit, name='edit'),
+
 
 ]
