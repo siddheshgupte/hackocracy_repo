@@ -3,31 +3,33 @@
 {% block title %}Transaction History{% endblock %}
 
 {% block content %}
-  <table>
+  <table class="table-fill">
+      <thead>
       <tr>
-          <th>To</th>
+          <th >To</th>
           <th>From</th>
           <th>Amount</th>
           <th>Time</th>
       </tr>
+      </thead>
+      <tbody class="table-hover">
       {% for tos in to_trans %}
       <tr>
-          <th>{{ tos.to }}</th>
-          <th>{{ tos.fro }}</th>
-          <th>{{ tos.amount }}</th>
-          <th>{{ tos.timestamp }}</th>
+          <td class="text-left">{{ tos.to }}</td>
+          <td class="text-left">{{ tos.fro }}</td>
+          <td class="text-left">{{ tos.amount }}</td>
+          <td class="text-left">{{ tos.timestamp }}</td>
       </tr>
       {% endfor %}
       {% for fros in from_trans %}
       <tr>
-          <th>{{ fros.to }}</th>
-          <th>{{ fros.fro }}</th>
-          <th>{{ fros.amount }}</th>
-          <th>{{ fros.timestamp }}</th>
+          <td class="text-left">{{ fros.to }}</td>
+          <td class="text-left">{{ fros.fro }}</td>
+          <td class="text-left">{{ fros.amount }}</td>
+          <td class="text-left">{{ fros.timestamp }}</td>
       </tr>
       {% endfor %}
-  </table>
-    <p><h3>Recieved:&nbsp</h3>{{recieved}}</p>
-    <p><h3>Given:&nbsp</h3>{{given}}</p>
-    <p><h3>Total present:&nbsp</h3>{{sum}}</p>
+      </tbody>
+  </table><p></p>
+    <span style="padding: 40px 0px 0px 320px"><h3 style="display: inline;">Recieved:&nbsp</h3>{{recieved}}<span style="padding-left: 40px"></span><h3 style="display: inline;">Given:&nbsp</h3>{{given}}<span style="padding-left: 40px"></span><h3 style="display: inline;">Total present:&nbsp</h3>{{sum}}</span>
 {% endblock %}
