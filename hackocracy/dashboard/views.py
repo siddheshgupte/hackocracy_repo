@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm
 from django.contrib.auth.decorators import login_required
+from .models import *
 
 
 def user_login(request):
@@ -30,6 +31,25 @@ def dashboard(request):
     return render(request,
                   'dashboard/dashboard.html',
                   {'section':'dashboard'})
+
+@login_required
+def Transaction_history(request):
+    to_trans=transactions.objects.filter(to = request.user).order_by('timestamp')
+
+    rec = 0
+    for to_t in to_trans:
+        rec += to_t.amount
+
+    from_trans = transactions.objects.filter(fro = request.user).order_by('timestamp')
+
+    giv=0
+    for from_t in from_trans:
+        giv += from_t.amount
+
+    total = rec - giv
+    return render(request,
+                  'dashboard/Transaction_history.html',
+                  {'section':'transaction_history','to_trans':to_trans,'from_trans':from_trans,'recieved':rec,'given':giv,'sum':total})
 
 
 def register(request):

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction History{% endblock %}
+
+{% block content %}
+  <table>
+      <tr>
+          <th>To</th>
+          <th>From</th>
+          <th>Amount</th>
+          <th>Time</th>
+      </tr>
+      {% for tos in to_trans %}
+      <tr>
+          <th>{{ tos.to }}</th>
+          <th>{{ tos.fro }}</th>
+          <th>{{ tos.amount }}</th>
+          <th>{{ tos.timestamp }}</th>
+      </tr>
+      {% endfor %}
+      {% for fros in from_trans %}
+      <tr>
+          <th>{{ fros.to }}</th>
+          <th>{{ fros.fro }}</th>
+          <th>{{ fros.amount }}</th>
+          <th>{{ fros.timestamp }}</th>
+      </tr>
+      {% endfor %}
+  </table>
+    <p><h3>Recieved:&nbsp</h3>{{recieved}}</p>
+    <p><h3>Given:&nbsp</h3>{{given}}</p>
+    <p><h3>Total present:&nbsp</h3>{{sum}}</p>
+{% endblock %}
