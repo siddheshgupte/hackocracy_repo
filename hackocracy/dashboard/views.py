@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
-from .forms import LoginForm, UserRegistrationForm
+from .forms import LoginForm, UserRegistrationForm, TransactionForm
 from django.contrib.auth.decorators import login_required
 from .models import *
 
@@ -28,9 +28,20 @@ def user_login(request):
 
 @login_required
 def dashboard(request):
-    return render(request,
-                  'dashboard/dashboard.html',
-                  {'section':'dashboard'})
+    if request.method == 'POST':
+        form = TransactionForm(request.POST);
+        if form.is_valid():
+            post = form.save();
+            post.save();
+            form_new = TransactionForm();
+            return render(request,
+                          'dashboard/dashboard.html',
+                          {'section': 'dashboard', 'form': form_new ,'saved_success': True})
+    else:
+        form = TransactionForm();
+        return render(request,
+                      'dashboard/dashboard.html',
+                      {'section':'dashboard','form':form ,'saved_success': False})
 
 @login_required
 def Transaction_history(request):

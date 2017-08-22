@@ -4,5 +4,13 @@
 
 {% block content %}
   <h1>Dashboard</h1>
-  <p>Welcome to your dashboard.</p>
+  <p>Add new Transaction</p>
+  {% if saved_success%}
+  <p>message: Last Transaction Saved Successfully</p>
+  {% endif%}
+ <form method="POST" >{% csrf_token %}
+        {{ form.as_p }}
+        {% csrf_token %}
+        <button type="submit">Save</button>
+    </form>
 {% endblock %}
