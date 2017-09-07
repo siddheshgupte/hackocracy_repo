@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'sorl.thumbnail',
     'dashboard',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -135,3 +136,9 @@ LOGOUT_URL = reverse_lazy('logout')
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+THUMBNAIL_DEBUG = True
+# THUMBNAIL_PREFIX = '/media/cache/'
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, '/users/')
+MEDIA_URL = '/users/'

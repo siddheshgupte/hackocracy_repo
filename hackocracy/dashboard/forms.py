@@ -14,6 +14,7 @@ class UserRegistrationForm(forms.ModelForm):
                                widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password',
                                 widget=forms.PasswordInput)
+    party_image = forms.ImageField(required=False)
 
     class Meta:
         model = User

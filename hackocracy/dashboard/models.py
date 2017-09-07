@@ -7,7 +7,7 @@ from django.conf import settings
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     political_party = models.CharField(max_length=50)
-    party_image = models.ImageField(upload_to='users/%Y/%m/%d',
+    party_image = models.ImageField(upload_to='users/party_logo/',
                                     blank=True)
 
     def __unicode__(self):

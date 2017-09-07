@@ -5,6 +5,7 @@ from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditFor
 from django.contrib.auth.decorators import login_required
 from .models import Profile
 from django.contrib import messages
+from django.conf import settings
 
 
 def user_login(request):
@@ -31,7 +32,7 @@ def user_login(request):
 def dashboard(request):
     return render(request,
                   'dashboard/dashboard.html',
-                  {'section':'dashboard'})
+                  {'section':'dashboard', 'img':request.user.profile.party_image})
 
 
 def register(request):
@@ -47,7 +48,8 @@ def register(request):
             new_user.save()
             # Create the user profile
             profile = Profile.objects.create(user=new_user,
-                                             political_party=user_form.political_party)
+                                             political_party=user_form.cleaned_data['political_party'],
+                                             party_image=user_form.cleaned_data['party_image'])
             return render(request,
                           'dashboard/register_done.html',
                           {'new_user': new_user})
