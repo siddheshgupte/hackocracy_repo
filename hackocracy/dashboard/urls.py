@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import register, edit,dashboard,Transaction_history
+from .views import register, edit, dashboard, Transaction_history, custom_logout
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -10,7 +10,7 @@ urlpatterns = [
         auth_views.login,
         name='login'),
     url(r'^logout/$',
-        auth_views.logout,
+        custom_logout,
         name='logout'),
     url(r'^logout-then-login/$',
         auth_views.logout_then_login,

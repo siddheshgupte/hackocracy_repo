@@ -1,8 +1,11 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
 import hashlib
 from datetime import datetime
+import json
 
 
 class Block:
@@ -15,8 +18,8 @@ class Block:
 
     def __unicode__(self):
         return u"This is block number {} with data : {} and hash {}".format(self.index,
-                                                                          self.data,
-                                                                          self.hash)
+                                                                            self.data,
+                                                                            self.hash)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -26,6 +29,10 @@ class Block:
                                   str(self.previous_hash) +
                                   str(self.timestamp) +
                                   str(self.data)).hexdigest()
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
 
 
 def get_genesis_block():
@@ -66,5 +73,10 @@ def generate_next_block(data, last_block):
     next_last_block_hash = last_block.hash
     return Block(next_index, next_last_block_hash.hash, next_timestamp, next_data)
 
-def mine():
-    last_block = blockchain[-1]
+
+@login_required
+def mine(request):
+
+    last_block = request.session['blockchain'][-1]
+
+

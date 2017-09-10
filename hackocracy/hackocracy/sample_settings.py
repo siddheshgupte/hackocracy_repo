@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'YOUR SECRET KEY HERE'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'block',
+    'sorl.thumbnail',
     'dashboard',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -101,6 +103,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'dashboard.authenticate.EmailAuthBackend',
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
@@ -130,6 +137,9 @@ LOGOUT_URL = reverse_lazy('logout')
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# For images
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+THUMBNAIL_DEBUG = True
+# THUMBNAIL_PREFIX = '/media/cache/'
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, '/users/')
+MEDIA_URL = '/users/'

@@ -4,8 +4,11 @@ from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm,TransactionForm
 from django.contrib.auth.decorators import login_required
 from .models import *
+from django.contrib.auth import views as auth_views
+import json
 from django.contrib import messages
-from block.views import get_genesis_block
+from block.views import get_genesis_block, Block
+from block.models import BlockChain
 from django.conf import settings
 
 
@@ -29,27 +32,16 @@ def user_login(request):
     return render(request, 'dashboard/login.html', {'form': form})
 
 
-@login_required
-def dashboard(request):
-    # TODO Make the blockchain into a model
-    # TODO check if the model is empty
-    # Initialize a blockchain when the user logs in
-    blockchain = [get_genesis_block()]
-    # print all the blocks in the blockchain
-    for block in blockchain:
-        print block
-
-
 def Transaction_history(request):
-    to_trans=transactions.objects.filter(to = request.user).order_by('timestamp')
+    to_trans = transactions.objects.filter(to=request.user).order_by('timestamp')
 
     rec = 0
     for to_t in to_trans:
         rec += to_t.amount
 
-    from_trans = transactions.objects.filter(fro = request.user).order_by('timestamp')
+    from_trans = transactions.objects.filter(fro=request.user).order_by('timestamp')
 
-    giv=0
+    giv = 0
     for from_t in from_trans:
         giv += from_t.amount
 
@@ -58,22 +50,38 @@ def Transaction_history(request):
                   'dashboard/Transaction_history.html',
                   {'section':'transaction_history','to_trans':to_trans,'from_trans':from_trans,'recieved':rec,'given':giv,'sum':total})
 
+
 @login_required
 def dashboard(request):
+
+    # Try to load the blockchain
+    q = BlockChain.objects.all()
+    request.session['blockchain'] = []
+    if q.exists():
+        for json_block in q:
+            request.session['blockchain'].append(json_block.block)
+    else:
+        # Initialize a blockchain when the user logs in
+        request.session['blockchain'] = [Block.toJSON(get_genesis_block())]
+    # print all the blocks in the blockchain
+    for block in request.session['blockchain']:
+        print block
+
     if request.method == 'POST':
-        form = TransactionForm(request.POST);
+        form = TransactionForm(request.POST)
         if form.is_valid():
-            post = form.save();
-            post.save();
-            form_new = TransactionForm();
+            post = form.save()
+            post.save()
+            form_new = TransactionForm()
             return render(request,
                           'dashboard/dashboard.html',
                           {'section': 'dashboard', 'form': form_new ,'saved_success': True, 'img':request.user.profile.party_image})
     else:
-        form = TransactionForm();
+        form = TransactionForm()
         return render(request,
                       'dashboard/dashboard.html',
                       {'section':'dashboard','form':form ,'saved_success': False, 'img':request.user.profile.party_image})
+
 
 def register(request):
     if request.method == 'POST':
@@ -90,6 +98,8 @@ def register(request):
             profile = Profile.objects.create(user=new_user,
                                              political_party=user_form.cleaned_data['political_party'],
                                              party_image=user_form.cleaned_data['party_image'])
+            # Works without this save line somehow
+            profile.save()
             return render(request,
                           'dashboard/register_done.html',
                           {'new_user': new_user})
@@ -121,3 +131,18 @@ def edit(request):
                   'dashboard/edit.html',
                   {'user_form': user_form,
                    'profile_form': profile_form})
+
+
+def custom_logout(request):
+    # TODO make sure that while mining we get the full chain
+    # TODO make sure that all the transactions are mined before logout
+
+    # First delete all the entries from the table
+    BlockChain.objects.all().delete()
+    # Replace with the current blockchain
+    for block in request.session['blockchain']:
+        q = BlockChain(block=block)
+        q.save()
+        print 'while logout the session is :'
+        print block
+    return auth_views.logout(request)
