@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
-from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
+from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm,TransactionForm
 from django.contrib.auth.decorators import login_required
-from .models import Profile
+from .models import *
 from django.contrib import messages
 from block.views import get_genesis_block
 from django.conf import settings
@@ -38,10 +38,42 @@ def dashboard(request):
     # print all the blocks in the blockchain
     for block in blockchain:
         print block
-    return render(request,
-                  'dashboard/dashboard.html',
-                  {'section':'dashboard', 'img':request.user.profile.party_image})
 
+
+def Transaction_history(request):
+    to_trans=transactions.objects.filter(to = request.user).order_by('timestamp')
+
+    rec = 0
+    for to_t in to_trans:
+        rec += to_t.amount
+
+    from_trans = transactions.objects.filter(fro = request.user).order_by('timestamp')
+
+    giv=0
+    for from_t in from_trans:
+        giv += from_t.amount
+
+    total = rec - giv
+    return render(request,
+                  'dashboard/Transaction_history.html',
+                  {'section':'transaction_history','to_trans':to_trans,'from_trans':from_trans,'recieved':rec,'given':giv,'sum':total})
+
+@login_required
+def dashboard(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST);
+        if form.is_valid():
+            post = form.save();
+            post.save();
+            form_new = TransactionForm();
+            return render(request,
+                          'dashboard/dashboard.html',
+                          {'section': 'dashboard', 'form': form_new ,'saved_success': True, 'img':request.user.profile.party_image})
+    else:
+        form = TransactionForm();
+        return render(request,
+                      'dashboard/dashboard.html',
+                      {'section':'dashboard','form':form ,'saved_success': False, 'img':request.user.profile.party_image})
 
 def register(request):
     if request.method == 'POST':

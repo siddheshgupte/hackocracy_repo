@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import register, edit, dashboard
+from .views import register, edit,dashboard,Transaction_history
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -18,6 +18,9 @@ urlpatterns = [
     url(r'^$',
         dashboard,
         name='dashboard'),
+    url(r'^Transaction_history/$',
+        Transaction_history,
+        name='Transaction_history'),
     url(r'^password-change/$',
         auth_views.password_change,
         name='password_change'),

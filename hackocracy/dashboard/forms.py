@@ -1,12 +1,18 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile
-
+from .models import transactions,Profile
 
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = transactions
+        fields = ('to','fro','amount',)
+        labels = {
+            "fro": "From"
+        }
 
 class UserRegistrationForm(forms.ModelForm):
     political_party = forms.CharField(max_length=50)

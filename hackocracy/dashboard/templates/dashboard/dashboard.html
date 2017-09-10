@@ -3,10 +3,19 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-  <h1>Dashboard</h1>
-  <p>Welcome to your dashboard. You can <a href="{% url "edit" %}">edit your
+<p>Welcome to your dashboard. You can <a href="{% url "edit" %}">edit your
     profile</a> or <a href="{% url "password_change" %}">change your password</a>.</p>
 {% load thumbnail %}
     {% thumbnail img "300" %}
         <img src="{{ img }}" class="image-detail">
+  <h1>Dashboard</h1>
+  <p>Add new Transaction</p>
+  {% if saved_success%}
+  <p>message: Last Transaction Saved Successfully</p>
+  {% endif%}
+ <form method="POST" >{% csrf_token %}
+        {{ form.as_p }}
+        {% csrf_token %}
+        <button type="submit">Save</button>
+    </form>
 {% endblock %}
