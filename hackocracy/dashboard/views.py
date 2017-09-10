@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
-from .forms import LoginForm, UserRegistrationForm, TransactionForm
+from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm,TransactionForm
 from django.contrib.auth.decorators import login_required
 from .models import *
+from django.contrib import messages
+from django.conf import settings
+>>>>>>> origin/master
 
 
 def user_login(request):
@@ -27,23 +30,6 @@ def user_login(request):
 
 
 @login_required
-def dashboard(request):
-    if request.method == 'POST':
-        form = TransactionForm(request.POST);
-        if form.is_valid():
-            post = form.save();
-            post.save();
-            form_new = TransactionForm();
-            return render(request,
-                          'dashboard/dashboard.html',
-                          {'section': 'dashboard', 'form': form_new ,'saved_success': True})
-    else:
-        form = TransactionForm();
-        return render(request,
-                      'dashboard/dashboard.html',
-                      {'section':'dashboard','form':form ,'saved_success': False})
-
-@login_required
 def Transaction_history(request):
     to_trans=transactions.objects.filter(to = request.user).order_by('timestamp')
 
@@ -62,6 +48,12 @@ def Transaction_history(request):
                   'dashboard/Transaction_history.html',
                   {'section':'transaction_history','to_trans':to_trans,'from_trans':from_trans,'recieved':rec,'given':giv,'sum':total})
 
+@login_required
+def dashboard(request):
+    return render(request,
+                  'dashboard/dashboard.html',
+                  {'section':'dashboard', 'img':request.user.profile.party_image})
+
 
 def register(request):
     if request.method == 'POST':
@@ -74,6 +66,10 @@ def register(request):
                 user_form.cleaned_data['password'])
             # Save the User object
             new_user.save()
+            # Create the user profile
+            profile = Profile.objects.create(user=new_user,
+                                             political_party=user_form.cleaned_data['political_party'],
+                                             party_image=user_form.cleaned_data['party_image'])
             return render(request,
                           'dashboard/register_done.html',
                           {'new_user': new_user})
@@ -82,3 +78,26 @@ def register(request):
     return render(request,
                   'dashboard/register.html',
                   {'user_form': user_form})
+
+
+@login_required
+def edit(request):
+    if request.method == 'POST':
+        user_form = UserEditForm(instance=request.user,
+                                 data=request.POST)
+        profile_form = ProfileEditForm(instance=request.user.profile,
+                                       data=request.POST,
+                                       files=request.FILES)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Profile updated successfully')
+        else:
+            messages.error(request, 'Error updating your profile')
+    else:
+        user_form = UserEditForm(instance=request.user)
+        profile_form = ProfileEditForm(instance=request.user.profile)
+    return render(request,
+                  'dashboard/edit.html',
+                  {'user_form': user_form,
+                   'profile_form': profile_form})
