@@ -6,52 +6,65 @@ from datetime import datetime
 
 
 class Block:
-    def __init__(self, index, previous_hash, timestamp, data, hash):
+    def __init__(self, index, previous_hash, timestamp, data):
         self.index = index
         self.previous_hash = previous_hash
         self.timestamp = timestamp
         self.data = data
-        self.hash = hash
+        self.hash = self.calculate_hash()
 
     def __unicode__(self):
-        print("This is block number {} with data : {} and hash {}".format(self.index,
+        return u"This is block number {} with data : {} and hash {}".format(self.index,
                                                                           self.data,
-                                                                          self.hash))
+                                                                          self.hash)
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
-def calculate_hash(index, previous_hash, timestamp, data):
-        return hashlib.sha256(index + previous_hash + timestamp + data).hexdigest()
-
-
-def generate_next_block(data):  
-    previous_block = get_lastest_block()
-    next_index = previous_block.index + 1
-    next_timestamp = datetime.now()
-    next_hash = calculate_hash(next_index, previous_block.hash, next_timestamp, data)
-    return Block(next_index, previous_block.hash, next_timestamp, data, next_hash)
+    def calculate_hash(self):
+            return hashlib.sha256(str(self.index) +
+                                  str(self.previous_hash) +
+                                  str(self.timestamp) +
+                                  str(self.data)).hexdigest()
 
 
 def get_genesis_block():
-    return Block(0, '0', '2017-09-02 23:41:45.944072', 'Genesis block', '816534932c2b7154836da6afc367695e6337db8a921823784c14378abed4f7d7')
+    return Block(0, '0', '2017-09-02 23:41:45.944072', 'Genesis block')
 
-def calculate_hash_for_block(new_block):
-    return calculate_hash(new_block.index,
-                          new_block.previous_hash,
-                          new_block.timestamp,
-                          new_block.data)
-# ???????
-blockchain = [get_genesis_block()]
+
+def verify_hash(new_block):
+    calculated_hash = hashlib.sha256(str(new_block.index) +
+                                     str(new_block.previous_hash) +
+                                     str(new_block.timestamp) +
+                                     str(new_block.data)).hexdigest()
+
+    # check if calculated hash is the block's hash
+    if calculated_hash == new_block.hash:
+        return True
+    print('expected hash {} got hash {}'.format(calculated_hash, new_block.hash))
+    return False
+
 
 # validate if a block or chain of blocks is valid
 # especially when we receive new blocks from other nodes
 # we must check those to decide whether to accept them or not
 def is_valid_block(new_block, previous_block):
-    if previous_block.index + 1 != new_block.index
+    if previous_block.index + 1 != new_block.index:
         print('Invalid Index')
         return False
     elif previous_block.hash != new_block.previous_hash:
-        print('Invalid previoushash')
+        print('Invalid previous hash')
         return False
-    elif calculate_hash_for_block(new_block) != new_block.hash:
-        print('Invalid hash, expected : {}, got : {}'.format(calculate_hash_for_block(new_block),
-                                                             new_block.hash))
+    elif not verify_hash(new_block):
+        print('Invalid hash')
+
+
+def generate_next_block(data, last_block):
+    next_index = last_block.index + 1
+    next_timestamp = datetime.now()
+    next_data = data
+    next_last_block_hash = last_block.hash
+    return Block(next_index, next_last_block_hash.hash, next_timestamp, next_data)
+
+def mine():
+    last_block = blockchain[-1]

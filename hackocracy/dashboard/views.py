@@ -5,6 +5,7 @@ from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditFor
 from django.contrib.auth.decorators import login_required
 from .models import Profile
 from django.contrib import messages
+from block.views import get_genesis_block
 from django.conf import settings
 
 
@@ -30,6 +31,13 @@ def user_login(request):
 
 @login_required
 def dashboard(request):
+    # TODO Make the blockchain into a model
+    # TODO check if the model is empty
+    # Initialize a blockchain when the user logs in
+    blockchain = [get_genesis_block()]
+    # print all the blocks in the blockchain
+    for block in blockchain:
+        print block
     return render(request,
                   'dashboard/dashboard.html',
                   {'section':'dashboard', 'img':request.user.profile.party_image})

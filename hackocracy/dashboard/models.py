@@ -12,3 +12,10 @@ class Profile(models.Model):
 
     def __unicode__(self):
         return 'Profile for user {}'.format(self.user.username)
+
+
+class Transactions(models.Model):
+    to = models.CharField(max_length=60)
+    fro = models.CharField(max_length=60)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
