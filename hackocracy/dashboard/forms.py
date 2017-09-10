@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import transactions,profile
+from .models import transactions,Profile
 
 class LoginForm(forms.Form):
     username = forms.CharField()

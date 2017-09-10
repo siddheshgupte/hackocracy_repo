@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 from django.contrib import messages
 from django.conf import settings
->>>>>>> origin/master
 
 
 def user_login(request):
@@ -50,10 +49,20 @@ def Transaction_history(request):
 
 @login_required
 def dashboard(request):
-    return render(request,
-                  'dashboard/dashboard.html',
-                  {'section':'dashboard', 'img':request.user.profile.party_image})
-
+    if request.method == 'POST':
+        form = TransactionForm(request.POST);
+        if form.is_valid():
+            post = form.save();
+            post.save();
+            form_new = TransactionForm();
+            return render(request,
+                          'dashboard/dashboard.html',
+                          {'section': 'dashboard', 'form': form_new ,'saved_success': True, 'img':request.user.profile.party_image})
+    else:
+        form = TransactionForm();
+        return render(request,
+                      'dashboard/dashboard.html',
+                      {'section':'dashboard','form':form ,'saved_success': False, 'img':request.user.profile.party_image})
 
 def register(request):
     if request.method == 'POST':
