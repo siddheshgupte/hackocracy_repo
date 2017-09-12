@@ -32,14 +32,15 @@ def user_login(request):
     return render(request, 'dashboard/login.html', {'form': form})
 
 
+@login_required
 def Transaction_history(request):
-    to_trans = transactions.objects.filter(to=request.user).order_by('timestamp')
+    to_trans = Exchanges.objects.filter(to=request.user).order_by('timestamp')
 
     rec = 0
     for to_t in to_trans:
         rec += to_t.amount
 
-    from_trans = transactions.objects.filter(fro=request.user).order_by('timestamp')
+    from_trans = Exchanges.objects.filter(fro=request.user).order_by('timestamp')
 
     giv = 0
     for from_t in from_trans:
@@ -99,7 +100,7 @@ def register(request):
                                              political_party=user_form.cleaned_data['political_party'],
                                              party_image=user_form.cleaned_data['party_image'])
             # Works without this save line somehow
-            profile.save()
+            # profile.save()
             return render(request,
                           'dashboard/register_done.html',
                           {'new_user': new_user})

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import transactions,Profile
+from .models import Exchanges,Profile
 
 class LoginForm(forms.Form):
     username = forms.CharField()
@@ -8,7 +8,7 @@ class LoginForm(forms.Form):
 
 class TransactionForm(forms.ModelForm):
     class Meta:
-        model = transactions
+        model = Exchanges
         fields = ('to','fro','amount',)
         labels = {
             "fro": "From"

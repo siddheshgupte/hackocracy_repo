@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import Profile,transactions
+from .models import Profile, Exchanges
 
 # Register your models here.
-admin.site.register(transactions)
+admin.site.register(Exchanges)
 
 
 class ProfileAdmin(admin.ModelAdmin):

@@ -1,11 +1,22 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-
-
+from dashboard.models import Exchanges
+from block.models import BlockChain
 # Create your views here.
 import hashlib
 from datetime import datetime
 import json
+from decimal import Decimal
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
+
+
+def custom_serializer(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return obj.__dict__
 
 
 class Block:
@@ -31,8 +42,8 @@ class Block:
                                   str(self.data)).hexdigest()
 
     def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
+        return json.dumps(self, default=custom_serializer,
+                          sort_keys=True, indent=4, cls=DjangoJSONEncoder)
 
 
 def get_genesis_block():
@@ -52,9 +63,7 @@ def verify_hash(new_block):
     return False
 
 
-# validate if a block or chain of blocks is valid
-# especially when we receive new blocks from other nodes
-# we must check those to decide whether to accept them or not
+# Check if a chain is valid
 def is_valid_block(new_block, previous_block):
     if previous_block.index + 1 != new_block.index:
         print('Invalid Index')
@@ -66,17 +75,43 @@ def is_valid_block(new_block, previous_block):
         print('Invalid hash')
 
 
-def generate_next_block(data, last_block):
-    next_index = last_block.index + 1
-    next_timestamp = datetime.now()
-    next_data = data
-    next_last_block_hash = last_block.hash
-    return Block(next_index, next_last_block_hash.hash, next_timestamp, next_data)
-
-
 @login_required
 def mine(request):
+    # TODO request peers
+    # TODO find largest block
+    last_block = json.loads(request.session['blockchain'][-1])
 
-    last_block = request.session['blockchain'][-1]
+    # set new blocks attributes
+    new_block_index = last_block['index'] + 1
+    new_block_timestamp = str(datetime.now())
+    new_block_previous_hash = last_block['hash']
+    new_block_data = []
+
+    # Fetch all from transactions or only user specific...
+    q = Exchanges.objects.all()
+
+    if q.exists():
+
+        new_block_data.extend(serializers.serialize('python', q))
+
+        # Make new block and convert to JSON
+        new_block = Block(new_block_index,
+                          new_block_previous_hash,
+                          new_block_timestamp,
+                          new_block_data)
+
+        request.session['blockchain'].append(new_block.toJSON())
+
+    # TODO delete the transaction db (only when everything works)
+
+    BlockChain.objects.all().delete()
+    # Replace with the current blockchain
+    for block in request.session['blockchain']:
+        q = BlockChain(block=block)
+        q.save()
+        print 'after mining the session is :'
+        print block
+
+
 
 
