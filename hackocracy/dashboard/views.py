@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm,TransactionForm
@@ -34,22 +34,22 @@ def user_login(request):
 
 @login_required
 def Transaction_history(request):
-    to_trans = Exchanges.objects.filter(to=request.user).order_by('timestamp')
 
-    rec = 0
-    for to_t in to_trans:
-        rec += to_t.amount
+    to_trans = Exchanges.objects.filter(to=request.user).order_by('timestamp')
+    rec = sum([x.amount for x in to_trans])
 
     from_trans = Exchanges.objects.filter(fro=request.user).order_by('timestamp')
-
-    giv = 0
-    for from_t in from_trans:
-        giv += from_t.amount
+    giv = sum([x.amount for x in from_trans])
 
     total = rec - giv
     return render(request,
                   'dashboard/Transaction_history.html',
-                  {'section':'transaction_history','to_trans':to_trans,'from_trans':from_trans,'recieved':rec,'given':giv,'sum':total})
+                  {'section': 'transaction_history',
+                   'to_trans': to_trans,
+                   'from_trans': from_trans,
+                   'recieved': rec,
+                   'given': giv,
+                   'sum': total})
 
 
 @login_required
@@ -147,3 +147,17 @@ def custom_logout(request):
         print 'while logout the session is :'
         print block
     return auth_views.logout(request)
+
+
+def send_blockchain(request):
+    blockchain = []
+
+    full_chain = BlockChain.objects.all()
+    for x in full_chain:
+        blockchain.append(x.block)
+
+        # for testing
+        print x
+
+    data = json.dumps(blockchain)
+    return HttpResponse(data, content_type='application/json')

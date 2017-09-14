@@ -6,6 +6,7 @@ from block.models import BlockChain
 import hashlib
 from datetime import datetime
 import json
+import requests
 from decimal import Decimal
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
@@ -50,35 +51,79 @@ def get_genesis_block():
     return Block(0, '0', '2017-09-02 23:41:45.944072', 'Genesis block')
 
 
-def verify_hash(new_block):
-    calculated_hash = hashlib.sha256(str(new_block.index) +
-                                     str(new_block.previous_hash) +
-                                     str(new_block.timestamp) +
-                                     str(new_block.data)).hexdigest()
+def verify_hash(new_block, json_verify=False):
+    if not json_verify:
+        calculated_hash = hashlib.sha256(str(new_block.index) +
+                                         str(new_block.previous_hash) +
+                                         str(new_block.timestamp) +
+                                         str(new_block.data)).hexdigest()
 
-    # check if calculated hash is the block's hash
-    if calculated_hash == new_block.hash:
-        return True
-    print('expected hash {} got hash {}'.format(calculated_hash, new_block.hash))
-    return False
+        # check if calculated hash is the block's hash
+        if calculated_hash == new_block.hash:
+            return True
+        print('expected hash {} got hash {}'.format(calculated_hash, new_block.hash))
+        return False
+    calculated_hash = hashlib.sha256(str(new_block['index']) +
+                                     str(new_block['previous_hash']) +
+                                     str(new_block['timestamp']) +
+                                     str(new_block['data'])).hexdigest()
+    return calculated_hash
 
 
 # Check if a chain is valid
-def is_valid_block(new_block, previous_block):
-    if previous_block.index + 1 != new_block.index:
-        print('Invalid Index')
-        return False
-    elif previous_block.hash != new_block.previous_hash:
-        print('Invalid previous hash')
-        return False
-    elif not verify_hash(new_block):
-        print('Invalid hash')
+# Returns Boolean
+# Checks index, previous_hash, hash
+def verify_chain(lst):
+    prev_index = 0
+    prev_hash = '0'
+    for ele in lst:
+        loaded_ele = json.loads(ele)
+        if prev_index != loaded_ele['index']:
+            print('index error')
+            return False
+        if prev_hash != loaded_ele['previous_hash']:
+            print('previous hash not equal , expected : {}, got : {}'.format(prev_hash, loaded_ele['previous_hash']))
+            return False
+        expected_hash = verify_hash(loaded_ele, json_verify=True)
+        if expected_hash != loaded_ele['hash']:
+            print('expected hash : {} , got {}'.format(expected_hash, loaded_ele['hash']))
+            return False
+        prev_index = loaded_ele['index'] + 1
+        prev_hash = loaded_ele['hash']
+    return True
+
+
+def get_peer_blockchains():
+
+    # TODO PEER LIST (Put in settings afterwards)
+    peer_list =[]
+
+    list_of_peer_blockchains = []
+
+    for peer in peer_list:
+        r = requests.get('http://{}/send_blockchain'.format(peer))
+        list_of_peer_blockchains.append(r.json())
+
+    return list_of_peer_blockchains
+
+
+def consensus(request):
+
+    # Get blocks from other nodes
+    list_of_all_blockchains = [request.session['blockchain']]
+    list_of_all_blockchains.extend(get_peer_blockchains())
+
+    # Find longest chain and assign it as the current blockchain
+    request.session['blockchain'] = max(list_of_all_blockchains, key=len)
 
 
 @login_required
 def mine(request):
-    # TODO request peers
-    # TODO find largest block
+
+    # Set current blockchain to the largest in the network
+    consensus(request)
+
+    verify_chain(request.session['blockchain'])
     last_block = json.loads(request.session['blockchain'][-1])
 
     # set new blocks attributes
@@ -111,6 +156,9 @@ def mine(request):
         q.save()
         print 'after mining the session is :'
         print block
+
+
+
 
 
 

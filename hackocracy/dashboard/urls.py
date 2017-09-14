@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import register, edit, dashboard, Transaction_history, custom_logout
+from .views import register, edit, dashboard, Transaction_history, custom_logout, send_blockchain
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -44,6 +44,9 @@ urlpatterns = [
         name='register'),
     url(r'^edit/$',
         edit, name='edit'),
+    url(r'^send_blockchain/$',
+        send_blockchain,
+        name='send_blockchain'),
 
 
 ]
