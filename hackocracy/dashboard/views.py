@@ -7,9 +7,10 @@ from .models import *
 from django.contrib.auth import views as auth_views
 import json
 from django.contrib import messages
-from block.views import get_genesis_block, Block
+from block.views import get_genesis_block, Block, mine
 from block.models import BlockChain
 from django.conf import settings
+from block.views import verify_chain
 
 
 def user_login(request):
@@ -66,6 +67,7 @@ def dashboard(request):
         request.session['blockchain'] = [Block.toJSON(get_genesis_block())]
     # print all the blocks in the blockchain
     for block in request.session['blockchain']:
+        print 'after login'
         print block
 
     if request.method == 'POST':
@@ -74,14 +76,15 @@ def dashboard(request):
             post = form.save()
             post.save()
             form_new = TransactionForm()
+            messages.success(request, 'Last Transaction Saved Successfully!')
             return render(request,
                           'dashboard/dashboard.html',
-                          {'section': 'dashboard', 'form': form_new ,'saved_success': True, 'img':request.user.profile.party_image})
+                          {'section': 'dashboard', 'form': form_new, 'img':request.user.profile.party_image})
     else:
         form = TransactionForm()
         return render(request,
                       'dashboard/dashboard.html',
-                      {'section':'dashboard','form':form ,'saved_success': False, 'img':request.user.profile.party_image})
+                      {'section':'dashboard','form':form, 'img':request.user.profile.party_image})
 
 
 def register(request):
@@ -100,7 +103,7 @@ def register(request):
                                              political_party=user_form.cleaned_data['political_party'],
                                              party_image=user_form.cleaned_data['party_image'])
             # Works without this save line somehow
-            # profile.save()
+            profile.save()
             return render(request,
                           'dashboard/register_done.html',
                           {'new_user': new_user})
@@ -135,9 +138,8 @@ def edit(request):
 
 
 def custom_logout(request):
-    # TODO make sure that while mining we get the full chain
     # TODO make sure that all the transactions are mined before logout
-
+    mine(request, logging_out=True)
     # First delete all the entries from the table
     BlockChain.objects.all().delete()
     # Replace with the current blockchain
@@ -150,14 +152,16 @@ def custom_logout(request):
 
 
 def send_blockchain(request):
+
     blockchain = []
 
     full_chain = BlockChain.objects.all()
     for x in full_chain:
         blockchain.append(x.block)
 
-        # for testing
-        print x
+    # check own blockchain before sending if its not valid then then send blank
+    if not verify_chain(blockchain):
+        blockchain = []
 
     data = json.dumps(blockchain)
     return HttpResponse(data, content_type='application/json')

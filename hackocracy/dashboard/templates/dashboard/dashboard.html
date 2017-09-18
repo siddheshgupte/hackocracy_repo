@@ -10,12 +10,11 @@
         <img src="{{ img }}" class="image-detail">
   <h1>Dashboard</h1>
   <p>Add new Transaction</p>
-  {% if saved_success%}
-  <p>message: Last Transaction Saved Successfully</p>
-  {% endif%}
- <form method="POST" >{% csrf_token %}
+
+ <form method="POST" >
+        {% csrf_token %}
         {{ form.as_p }}
         {% csrf_token %}
-        <button type="submit">Save</button>
+        <p><input type="submit" value="Save"> </p>
     </form>
 {% endblock %}

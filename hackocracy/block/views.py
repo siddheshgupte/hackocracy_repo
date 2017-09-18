@@ -7,9 +7,11 @@ import hashlib
 from datetime import datetime
 import json
 import requests
+from django.contrib import messages
 from decimal import Decimal
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
+from dashboard.forms import TransactionForm
 
 
 def custom_serializer(obj):
@@ -84,9 +86,12 @@ def verify_chain(lst):
         if prev_hash != loaded_ele['previous_hash']:
             print('previous hash not equal , expected : {}, got : {}'.format(prev_hash, loaded_ele['previous_hash']))
             return False
-        expected_hash = verify_hash(loaded_ele, json_verify=True)
-        if expected_hash != loaded_ele['hash']:
-            print('expected hash : {} , got {}'.format(expected_hash, loaded_ele['hash']))
+
+        veri_block = Block(loaded_ele['index'], loaded_ele['previous_hash'], loaded_ele['timestamp'],
+                           loaded_ele['data'])
+        # expected_hash = verify_hash(loaded_ele, json_verify=True)
+        if veri_block.hash != loaded_ele['hash']:
+            print('expected hash : {} , got {}'.format(veri_block.hash, loaded_ele['hash']))
             return False
         prev_index = loaded_ele['index'] + 1
         prev_hash = loaded_ele['hash']
@@ -118,12 +123,13 @@ def consensus(request):
 
 
 @login_required
-def mine(request):
+def mine(request, logging_out=False):
 
     # Set current blockchain to the largest in the network
     consensus(request)
 
-    verify_chain(request.session['blockchain'])
+    print verify_chain(request.session['blockchain'])
+    # each node is verifying before sending so this verify may not be needed
     last_block = json.loads(request.session['blockchain'][-1])
 
     # set new blocks attributes
@@ -147,7 +153,8 @@ def mine(request):
 
         request.session['blockchain'].append(new_block.toJSON())
 
-    # TODO delete the transaction db (only when everything works)
+        # TODO delete the transaction db (only when everything works)
+        Exchanges.objects.all().delete()
 
     BlockChain.objects.all().delete()
     # Replace with the current blockchain
@@ -157,7 +164,9 @@ def mine(request):
         print 'after mining the session is :'
         print block
 
-
+    if not logging_out:
+        messages.success(request, 'Transactions were made Permanent!')
+        return render(request, 'dashboard/Transaction_history.html')
 
 
 

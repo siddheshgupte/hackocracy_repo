@@ -2,9 +2,11 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Exchanges,Profile
 
+
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
+
 
 class TransactionForm(forms.ModelForm):
     class Meta:
@@ -13,6 +15,7 @@ class TransactionForm(forms.ModelForm):
         labels = {
             "fro": "From"
         }
+
 
 class UserRegistrationForm(forms.ModelForm):
     political_party = forms.CharField(max_length=50)

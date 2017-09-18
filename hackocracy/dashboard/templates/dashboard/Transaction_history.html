@@ -32,4 +32,11 @@
       </tbody>
   </table><p></p>
     <span style="padding: 40px 0px 0px 320px"><h3 style="display: inline;">Recieved:&nbsp</h3>{{recieved}}<span style="padding-left: 40px"></span><h3 style="display: inline;">Given:&nbsp</h3>{{given}}<span style="padding-left: 40px"></span><h3 style="display: inline;">Total present:&nbsp</h3>{{sum}}</span>
+
+ <form action="/blocks/mine/" method="POST" >
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% csrf_token %}
+        <p><input type="submit" value="Mine"> </p>
+    </form>
 {% endblock %}
