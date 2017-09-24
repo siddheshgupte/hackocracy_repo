@@ -9,15 +9,13 @@ import json
 import requests
 from django.contrib import messages
 from decimal import Decimal
-from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
-from dashboard.forms import TransactionForm
 
 
 def custom_serializer(obj):
     if isinstance(obj, Decimal):
         return float(obj)
-    if isinstance(obj, datetime):
+    if hasattr(obj, 'isoformat'):
         return obj.isoformat()
     return obj.__dict__
 
@@ -46,7 +44,7 @@ class Block:
 
     def toJSON(self):
         return json.dumps(self, default=custom_serializer,
-                          sort_keys=True, indent=4, cls=DjangoJSONEncoder)
+                          cls=DjangoJSONEncoder)
 
 
 def get_genesis_block():
@@ -72,6 +70,7 @@ def verify_hash(new_block, json_verify=False):
     return calculated_hash
 
 
+# TODO remove all the print statements at the end
 # Check if a chain is valid
 # Returns Boolean
 # Checks index, previous_hash, hash
@@ -91,8 +90,20 @@ def verify_chain(lst):
                            loaded_ele['data'])
         # expected_hash = verify_hash(loaded_ele, json_verify=True)
         if veri_block.hash != loaded_ele['hash']:
-            print('expected hash : {} , got {}'.format(veri_block.hash, loaded_ele['hash']))
+            print('expected hash : {} , got {}'.format(type(veri_block.hash),type(loaded_ele['hash'])))
+            if veri_block.index == loaded_ele['index']:
+                print 'index not w {} {}'.format(type(veri_block.index), type(loaded_ele['index']))
+
+            if veri_block.previous_hash == loaded_ele['previous_hash']:
+                print 'previous_hash not w {} {}'.format(type(veri_block.previous_hash), type(loaded_ele['previous_hash']))
+
+            if veri_block.timestamp == loaded_ele['timestamp']:
+                print 'timestamp not w {} {}'.format(type(veri_block.timestamp), type(loaded_ele['timestamp']))
+
+            if veri_block.data == loaded_ele['data']:
+                print 'data not w {} {}'.format(type(veri_block.data), type(loaded_ele['data']))
             return False
+
         prev_index = loaded_ele['index'] + 1
         prev_hash = loaded_ele['hash']
     return True
@@ -134,17 +145,21 @@ def mine(request, logging_out=False):
 
     # set new blocks attributes
     new_block_index = last_block['index'] + 1
-    new_block_timestamp = str(datetime.now())
+    new_block_timestamp = datetime.now().isoformat()
     new_block_previous_hash = last_block['hash']
-    new_block_data = []
 
-    # Fetch all from transactions or only user specific...
-    q = Exchanges.objects.all()
+    # Fetch all from transactions with objects.values() instead of objects.all()
+    q = Exchanges.objects.values()
 
     if q.exists():
 
-        new_block_data.extend(serializers.serialize('python', q))
+        # the queryset is not serializable directly
+        q = list(q)
 
+        inter = json.dumps(q, cls=DjangoJSONEncoder)
+        new_block_data = inter
+        print 'after serialization'
+        print inter
         # Make new block and convert to JSON
         new_block = Block(new_block_index,
                           new_block_previous_hash,
@@ -153,7 +168,7 @@ def mine(request, logging_out=False):
 
         request.session['blockchain'].append(new_block.toJSON())
 
-        # TODO delete the transaction db (only when everything works)
+        # delete the transaction db (only when everything works)
         Exchanges.objects.all().delete()
 
     BlockChain.objects.all().delete()
