@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}All Transaction{% endblock %}
+
+{% block content %}
+  <table class="table-fill">
+      <thead>
+      <tr>
+          <th >To</th>
+          <th>From</th>
+          <th>Amount</th>
+          <th>Time</th>
+      </tr>
+      </thead>
+      <tbody class="table-hover">
+      {% for tos in to_trans %}
+      <tr>
+          <td class="text-left">{{ tos.0 }}</td>
+          <td class="text-left">{{ tos.1 }}</td>
+          <td class="text-left">{{ tos.2 }}</td>
+          <td class="text-left">{{ tos.3 }}</td>
+      </tr>
+      {% endfor %}
+
+      </tbody>
+  </table>
+{% endblock %}

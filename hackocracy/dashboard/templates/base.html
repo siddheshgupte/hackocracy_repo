@@ -16,6 +16,9 @@
       <li {% if section == "transaction_history" %}class="selected"{% endif %}>
         <a href="{% url "Transaction_history" %}">Uncommitted Transaction History</a>
       </li>
+      <li {% if section == "all_transaction" %}class="selected"{% endif %}>
+        <a href="{% url "all_transaction" %}">all transactions</a>
+      </li>
       <!--<li {% if section == "mine" %}class="selected"{% endif %}>-->
         <!--<a href="#">Mine</a>-->
       <!--</li>-->

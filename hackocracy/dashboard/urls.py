@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .views import register, edit, dashboard, Transaction_history, custom_logout, send_blockchain
+from .views import register, edit, dashboard, Transaction_history, custom_logout, send_blockchain, all_transaction
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -21,6 +21,9 @@ urlpatterns = [
     url(r'^Transaction_history/$',
         Transaction_history,
         name='Transaction_history'),
+    url(r'^all_transaction/$',
+        all_transaction,
+        name='all_transaction'),
     url(r'^password-change/$',
         auth_views.password_change,
         name='password_change'),

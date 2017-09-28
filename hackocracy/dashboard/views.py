@@ -72,7 +72,10 @@ def dashboard(request):
 
     if request.method == 'POST':
         form = TransactionForm(request.POST)
-        if form.is_valid():
+        print(type(request.user.username))
+        print(form["to"].value() == request.user.username)
+        print(form["fro"].value() == request.user.username)
+        if form.is_valid()and(form["to"].value()==request.user.username or form["fro"].value()==request.user.username ):
             post = form.save()
             post.save()
             form_new = TransactionForm()
@@ -80,6 +83,12 @@ def dashboard(request):
             return render(request,
                           'dashboard/dashboard.html',
                           {'section': 'dashboard', 'form': form_new, 'img':request.user.profile.party_image})
+        else:
+            form = TransactionForm()
+            messages.error(request, 'Not a valid Transaction!')
+            return render(request,
+                          'dashboard/dashboard.html',
+                          {'section': 'dashboard', 'form': form, 'img': request.user.profile.party_image})
     else:
         form = TransactionForm()
         return render(request,
@@ -165,3 +174,23 @@ def send_blockchain(request):
 
     data = json.dumps(blockchain)
     return HttpResponse(data, content_type='application/json')
+
+def all_transaction(request):
+    to_trans =[]
+    i=0
+    for block in request.session['blockchain']:
+        q = json.loads(block)
+        if(i!=0):
+            ob=json.loads(q["data"])
+            for datas in ob:
+                t = []
+                t.append(datas["to"])
+                t.append(datas["fro"])
+                t.append(datas["amount"])
+                t.append(datas["timestamp"])
+                to_trans.append(t)
+        i=i+1
+    return render(request,
+                  'dashboard/all_transaction.html',
+                  {'section': 'all_transaction',
+                   'to_trans': to_trans,})
