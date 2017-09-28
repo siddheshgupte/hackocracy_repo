@@ -85,7 +85,7 @@ def dashboard(request):
                           {'section': 'dashboard', 'form': form_new, 'img':request.user.profile.party_image})
         else:
             form = TransactionForm()
-            messages.error(request, 'Not a valid Transaction!')
+            messages.error(request, 'Enter a transaction pertaining to the current user!')
             return render(request,
                           'dashboard/dashboard.html',
                           {'section': 'dashboard', 'form': form, 'img': request.user.profile.party_image})
