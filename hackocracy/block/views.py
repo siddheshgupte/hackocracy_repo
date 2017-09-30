@@ -111,7 +111,6 @@ def verify_chain(lst):
 
 def get_peer_blockchains():
 
-    # TODO PEER LIST (Put in settings afterwards)
     peer_list = settings.PEER_LIST
     list_of_peer_blockchains = []
 

@@ -176,6 +176,9 @@ def send_blockchain(request):
 
 
 def all_transaction(request):
+
+    mine(request)
+
     to_trans =[]
     i=0
     for block in request.session['blockchain']:
