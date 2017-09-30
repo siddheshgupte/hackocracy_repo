@@ -66,15 +66,15 @@ def dashboard(request):
         # Initialize a blockchain when the user logs in
         request.session['blockchain'] = [Block.toJSON(get_genesis_block())]
     # print all the blocks in the blockchain
-    for block in request.session['blockchain']:
-        print 'after login'
-        print block
+    # for block in request.session['blockchain']:
+    #     print 'after login'
+    #     print block
 
     if request.method == 'POST':
         form = TransactionForm(request.POST)
-        print(type(request.user.username))
-        print(form["to"].value() == request.user.username)
-        print(form["fro"].value() == request.user.username)
+        # print(type(request.user.username))
+        # print(form["to"].value() == request.user.username)
+        # print(form["fro"].value() == request.user.username)
         if form.is_valid()and(form["to"].value()==request.user.username or form["fro"].value()==request.user.username ):
             post = form.save()
             post.save()
@@ -147,7 +147,6 @@ def edit(request):
 
 
 def custom_logout(request):
-    # TODO make sure that all the transactions are mined before logout
     mine(request, logging_out=True)
     # First delete all the entries from the table
     BlockChain.objects.all().delete()
@@ -155,8 +154,8 @@ def custom_logout(request):
     for block in request.session['blockchain']:
         q = BlockChain(block=block)
         q.save()
-        print 'while logout the session is :'
-        print block
+        # print 'while logout the session is :'
+        # print block
     return auth_views.logout(request)
 
 
@@ -174,6 +173,7 @@ def send_blockchain(request):
 
     data = json.dumps(blockchain)
     return HttpResponse(data, content_type='application/json')
+
 
 def all_transaction(request):
     to_trans =[]

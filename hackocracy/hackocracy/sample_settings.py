@@ -120,7 +120,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -143,3 +143,6 @@ THUMBNAIL_DEBUG = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, '/users/')
 MEDIA_URL = '/users/'
+
+# PEER LIST
+PEER_LIST = []

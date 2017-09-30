@@ -10,6 +10,7 @@ import requests
 from django.contrib import messages
 from decimal import Decimal
 from django.core.serializers.json import DjangoJSONEncoder
+from django.conf import settings
 
 
 def custom_serializer(obj):
@@ -70,7 +71,6 @@ def verify_hash(new_block, json_verify=False):
     return calculated_hash
 
 
-# TODO remove all the print statements at the end
 # Check if a chain is valid
 # Returns Boolean
 # Checks index, previous_hash, hash
@@ -112,12 +112,11 @@ def verify_chain(lst):
 def get_peer_blockchains():
 
     # TODO PEER LIST (Put in settings afterwards)
-    peer_list =[]
-
+    peer_list = settings.PEER_LIST
     list_of_peer_blockchains = []
 
     for peer in peer_list:
-        r = requests.get('http://{}/send_blockchain'.format(peer))
+        r = requests.get('http://{}/send_blockchain/'.format(peer))
         list_of_peer_blockchains.append(r.json())
 
     return list_of_peer_blockchains
@@ -139,7 +138,7 @@ def mine(request, logging_out=False):
     # Set current blockchain to the largest in the network
     consensus(request)
 
-    print verify_chain(request.session['blockchain'])
+    # print verify_chain(request.session['blockchain'])
     # each node is verifying before sending so this verify may not be needed
     last_block = json.loads(request.session['blockchain'][-1])
 
@@ -158,8 +157,8 @@ def mine(request, logging_out=False):
 
         inter = json.dumps(q, cls=DjangoJSONEncoder)
         new_block_data = inter
-        print 'after serialization'
-        print inter
+        # print 'after serialization'
+        # print inter
         # Make new block and convert to JSON
         new_block = Block(new_block_index,
                           new_block_previous_hash,
@@ -176,8 +175,8 @@ def mine(request, logging_out=False):
     for block in request.session['blockchain']:
         q = BlockChain(block=block)
         q.save()
-        print 'after mining the session is :'
-        print block
+        # print 'after mining the session is :'
+        # print block
 
     if not logging_out:
         messages.success(request, 'Transactions were made Permanent!')
